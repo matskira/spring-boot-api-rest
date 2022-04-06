@@ -1,7 +1,11 @@
 package io.github.matskira.rest.controller;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -96,6 +100,13 @@ public class ClienteController {
 		return ResponseEntity.notFound().build();
 	}
 	
+	
+	/** 
+	 * Método responsável por atualizar clientes na base de dados 
+	 * @param Cliente cliente
+	 * @param Integer id
+	 * @return Retorna 204 sem conteúdo
+	 * */	
 	@PutMapping(value = "/atualiza/{id}")
 	@ResponseBody
 	public ResponseEntity atualizaCliente( @RequestBody Cliente cliente,  @PathVariable Integer id ){
@@ -107,4 +118,16 @@ public class ClienteController {
 		}).orElseGet(()->ResponseEntity.notFound().build());	
 	}
 	
+	/**
+	 * 
+	 * @see https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example.usage
+	 *  */
+	@GetMapping(value = "/consulta_cliente")
+	public ResponseEntity find( Cliente filtro ){
+		ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(StringMatcher.CONTAINING);
+		Example example = Example.of(filtro, matcher);
+		
+		List<Cliente> lista = clienteRep.findAll(example);
+		return ResponseEntity.ok(lista);
+	}
 }
