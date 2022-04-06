@@ -1,13 +1,11 @@
 package io.github.matskira.rest.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.matskira.domain.entity.Cliente;
 import io.github.matskira.domain.repository.ClienteRepository;
@@ -36,7 +36,7 @@ import io.github.matskira.domain.repository.ClienteRepository;
  * 
 */
 
-@Controller
+@RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
 	
@@ -52,22 +52,11 @@ public class ClienteController {
 	 * @return Objeto Cliente
 	 * */
 	@GetMapping(value = "/{id}")
-	@ResponseBody
-	public ResponseEntity<Cliente> getClienteById(@PathVariable(name = "id") Integer id ) {
+	public Cliente getClienteById(@PathVariable(name = "id") Integer id ) {
 		
-		Optional<Cliente> cliente = clienteRep.findById(id);
-		if (cliente.isPresent()) {
-			//Exemplo de response entity com maiores informações
-			//HttpHeaders headers = new HttpHeaders();
-			//List<String> strings = new ArrayList<String>();
-			//strings.add("token");
-			//headers.put("Authorization", strings);
-			//ResponseEntity<Cliente> response = new ResponseEntity<Cliente>(cliente.get(), headers, HttpStatus.OK);
-			
-			return ResponseEntity.ok(cliente.get());
-		}
+		return clienteRep.findById(id).orElseThrow(
+				()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não foi encontrado com sucesso"));
 		
-		return ResponseEntity.notFound().build();
 	}
 	
 	/** 
@@ -76,11 +65,9 @@ public class ClienteController {
 	 * @return dados do cliente salvo na base
 	 * */
 	@PostMapping(value = "/cadastro")
-	@ResponseBody
-	public ResponseEntity<Cliente> saveCliente( @RequestBody Cliente cliente ){
-		Cliente clienteSalvo = clienteRep.save(cliente);
-		
-		return ResponseEntity.ok(clienteSalvo);
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public Cliente saveCliente( @RequestBody Cliente cliente ){
+		return clienteRep.save(cliente);
 	}
 	
 	/** 
@@ -89,15 +76,15 @@ public class ClienteController {
 	 * @return Retorna 204 sem conteúdo
 	 * */
 	@DeleteMapping(value = "/exclui/{id}")
-	@ResponseBody
-	public ResponseEntity<Cliente> deleteCliente(@PathVariable Integer id ){
-		Optional<Cliente> clienteSalvo = clienteRep.findById(id);
-		if (clienteSalvo.isPresent()) {
-			clienteRep.delete(clienteSalvo.get());
-			return ResponseEntity.noContent().build();
-		}
-		
-		return ResponseEntity.notFound().build();
+	@ResponseStatus( code = HttpStatus.NO_CONTENT)
+	public void deleteCliente(@PathVariable Integer id ){
+		clienteRep.findById(id)
+        .map( cliente -> {
+            clienteRep.delete(cliente );
+            return cliente;
+        })
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Cliente não encontrado") );
 	}
 	
 	
@@ -108,26 +95,26 @@ public class ClienteController {
 	 * @return Retorna 204 sem conteúdo
 	 * */	
 	@PutMapping(value = "/atualiza/{id}")
-	@ResponseBody
-	public ResponseEntity atualizaCliente( @RequestBody Cliente cliente,  @PathVariable Integer id ){
+	public void atualizaCliente( @RequestBody Cliente cliente,  @PathVariable Integer id ){
 		//exemplo de uso do map do Objeto Optional
-		return clienteRep.findById(id).map(clienteExistente ->{
+		clienteRep.findById(id).map(clienteExistente ->{
 			cliente.setId(clienteExistente.getId());
 			clienteRep.save(cliente);
-			return ResponseEntity.noContent().build();
-		}).orElseGet(()->ResponseEntity.notFound().build());	
+			return clienteExistente;
+		}).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Cliente não encontrado"));	
 	}
 	
 	/**
-	 * 
+	 * Método responsável por consultar cliente por vários tipos de pesquisa usando o Example
+	 * @param Cliente cliente
+	 * @return Retorna um ou vários dados de cliente
 	 * @see https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example.usage
 	 *  */
 	@GetMapping(value = "/consulta_cliente")
-	public ResponseEntity find( Cliente filtro ){
+	public List<Cliente> find( Cliente filtro ){
 		ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(StringMatcher.CONTAINING);
 		Example example = Example.of(filtro, matcher);
-		
-		List<Cliente> lista = clienteRep.findAll(example);
-		return ResponseEntity.ok(lista);
+		return clienteRep.findAll(example);
 	}
 }
