@@ -12,10 +12,12 @@ import io.github.matskira.domain.entity.Cliente;
 import io.github.matskira.domain.entity.ItemPedido;
 import io.github.matskira.domain.entity.Pedido;
 import io.github.matskira.domain.entity.Produto;
+import io.github.matskira.domain.enums.StatusPedido;
 import io.github.matskira.domain.repository.ClienteRepository;
 import io.github.matskira.domain.repository.ItemPedidoRepository;
 import io.github.matskira.domain.repository.PedidoRepository;
 import io.github.matskira.domain.repository.ProdutoRepository;
+import io.github.matskira.exception.PedidoException;
 import io.github.matskira.exception.RegraNegocioException;
 import io.github.matskira.rest.dto.ItemPedidoDTO;
 import io.github.matskira.rest.dto.PedidoDTO;
@@ -46,6 +48,7 @@ public class PedidoServiceImpl implements PedidoService{
 		pedido.setTotal(pedidoDTO.getTotal());
 		pedido.setDataPedido(LocalDate.now());
 		pedido.setCliente(cliente);
+		pedido.setStatus(StatusPedido.REALIZADO);
 		
 		List<ItemPedido> itemsPedido = converterItens(pedido, pedidoDTO.getItens());
 		repository.save(pedido);
@@ -76,6 +79,18 @@ public class PedidoServiceImpl implements PedidoService{
 	@Override
 	public Optional<Pedido> obterPedidoCompleto(Integer id) {
 		return repository.findByIdFetchItemPedidos(id);
+	}
+
+	@Override
+	@Transactional
+	public void atualizaStatusPedido(Integer id, StatusPedido status) {
+		repository.findById(id)
+					.map(pedido -> {
+						pedido.setStatus(status);
+						return repository.save(pedido);
+					}).orElseThrow(()->
+					    new PedidoException()
+					);;
 	}
 	
 	

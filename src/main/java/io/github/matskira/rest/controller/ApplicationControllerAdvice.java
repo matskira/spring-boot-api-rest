@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import io.github.matskira.exception.PedidoException;
 import io.github.matskira.exception.RegraNegocioException;
 import io.github.matskira.rest.APIErrors;
 
@@ -21,5 +22,11 @@ public class ApplicationControllerAdvice {
 	public APIErrors handleRegraNegocioException(RegraNegocioException exc) {
 		String msgErro = exc.getMessage();
 		return new APIErrors(msgErro);
+	}
+	
+	@ExceptionHandler(PedidoException.class)
+	@ResponseStatus(code = HttpStatus.NOT_FOUND)
+	public APIErrors handlePedidoNotFoundException(PedidoException pexc) {
+		return new APIErrors(pexc.getMessage());
 	}
 }
