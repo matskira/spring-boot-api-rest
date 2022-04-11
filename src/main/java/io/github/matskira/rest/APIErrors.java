@@ -3,7 +3,6 @@ package io.github.matskira.rest;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.Data;
 import lombok.Getter;
 
 public class APIErrors {
@@ -14,4 +13,10 @@ public class APIErrors {
 	public APIErrors(String mensagemErro){
 		this.errors = Arrays.asList(mensagemErro);
 	}
+
+	public APIErrors(List<String> errors) {
+		this.errors = errors;
+	}
+	
+	
 }

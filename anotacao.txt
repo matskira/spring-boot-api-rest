@@ -1,0 +1,10 @@
+Conteúdos do projeto vendasAPI
+- padrões RESTFul API 
+- Mapear recursos e subrecursos REST utilizando os preceitos RESTFul
+- Tratar erros de forma simples e bem especificada;
+- Realizar operações POST, DELETE, GET, PUT, PATCH e Retornar códigos de Status apropriados;
+- Trabalhar com LOMBOK project;
+- Utilizar o Spring Boot dev tools.
+- Utilizar a especificação Bean Validation;
+- Criar Annotation e validadores customizados;
+- Configurar e trabalhar Internacionalização;
