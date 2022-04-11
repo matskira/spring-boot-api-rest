@@ -2,6 +2,8 @@ package io.github.matskira.rest.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.ExampleMatcher.StringMatcher;
@@ -50,7 +52,7 @@ public class ProdutoController {
 	 * */
 	@PostMapping(value = "/cadastro")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public Produto saveProduto( @RequestBody Produto produto ){
+	public Produto saveProduto( @RequestBody @Valid Produto produto ){
 		return produtoRep.save(produto);
 	}
 	
@@ -80,7 +82,7 @@ public class ProdutoController {
 	 * */	
 	@PutMapping(value = "/atualiza/{id}")
 	@ResponseStatus( code = HttpStatus.NO_CONTENT)
-	public void atualizaProduto( @RequestBody Produto produto,  @PathVariable Integer id ){
+	public void atualizaProduto( @RequestBody @Valid Produto produto,  @PathVariable Integer id ){
 		//exemplo de uso do map do Objeto Optional
 		produtoRep.findById(id).map(produtoExistente ->{
 			produto.setId(produtoExistente.getId());

@@ -1,4 +1,4 @@
-package io.github.matskira;
+ package io.github.matskira;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

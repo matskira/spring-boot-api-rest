@@ -97,7 +97,7 @@ public class ClienteController {
 	 * @return Retorna 204 sem conteúdo
 	 * */	
 	@PutMapping(value = "/atualiza/{id}")
-	public void atualizaCliente( @RequestBody Cliente cliente,  @PathVariable Integer id ){
+	public void atualizaCliente( @RequestBody @Valid Cliente cliente,  @PathVariable Integer id ){
 		//exemplo de uso do map do Objeto Optional
 		clienteRep.findById(id).map(clienteExistente ->{
 			cliente.setId(clienteExistente.getId());

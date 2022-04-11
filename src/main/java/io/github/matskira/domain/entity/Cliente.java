@@ -37,7 +37,7 @@ public class Cliente {
 	private String nome;
 	
 	@Column(name = "cpf", length = 16)
-	@NotEmpty(message ="Campo cpd não é obrigatório")
+	@NotEmpty(message ="Campo CPF não é obrigatório")
 	@CPF(message = "Informe um CPF válido")
 	private String cpf;
 
