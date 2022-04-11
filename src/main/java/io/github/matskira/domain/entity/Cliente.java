@@ -33,18 +33,17 @@ public class Cliente {
 	private Integer id;
 
 	@Column(name = "nome", length = 100)
-	@NotEmpty(message = "Campo nome é obrigatório.")
+	@NotEmpty(message = " {campo.nome.obrigatorio}")
 	private String nome;
-	
+
 	@Column(name = "cpf", length = 16)
-	@NotEmpty(message ="Campo CPF não é obrigatório")
-	@CPF(message = "Informe um CPF válido")
+	@NotEmpty(message = "{campo.cpf.obrigatorio}")
+	@CPF(message = "{campo.cpf.invalido}")
 	private String cpf;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
 	private Set<Pedido> pedidos;
-
 
 	public Cliente(Integer id, String nome) {
 		this.id = id;
