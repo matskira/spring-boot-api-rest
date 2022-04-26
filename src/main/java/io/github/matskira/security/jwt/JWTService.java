@@ -1,4 +1,4 @@
-package io.github.matskira.service;
+package io.github.matskira.security.jwt;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
