@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import io.github.matskira.domain.entity.Usuario;
 import io.github.matskira.domain.repository.UsuarioRepository;
+import io.github.matskira.exception.SenhaInvalidaException;
 
 @Service
 public class UsuarioServiceImpl implements UserDetailsService {
@@ -24,6 +25,16 @@ public class UsuarioServiceImpl implements UserDetailsService {
 	@Autowired
 	private UsuarioRepository userRep;
 
+	
+	public UserDetails autenticar(Usuario usuario) {
+		UserDetails usuarioDetails = loadUserByUsername(usuario.getLogin());
+		boolean senhaValid = encoder.matches(usuario.getSenha(), usuarioDetails.getPassword());
+		if (senhaValid) {
+			return usuarioDetails;
+		}
+		throw new SenhaInvalidaException();
+	}
+	
 	/**
 	 * Método responsável por carregar os usuários na base de dados
 	 */
