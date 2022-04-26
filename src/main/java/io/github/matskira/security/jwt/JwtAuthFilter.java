@@ -32,7 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 		String authorization = request.getHeader("Authorization");
 		if (authorization != null && authorization.startsWith("Bearer")) {
-			String token = authorization.split("")[1];
+			String token = authorization.split(" ")[1];
 			boolean tokenValid = jwtService.tokenValido(token);
 			if (tokenValid) {
 				String loginUsuario = jwtService.obterLoginUsuario(token);
