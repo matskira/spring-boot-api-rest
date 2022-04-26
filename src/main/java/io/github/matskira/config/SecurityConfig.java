@@ -7,9 +7,14 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.github.matskira.security.jwt.JWTService;
+import io.github.matskira.security.jwt.JwtAuthFilter;
 import io.github.matskira.service.impl.UsuarioServiceImpl;
 
 @EnableWebSecurity
@@ -18,6 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	//Injeção do usuário service
 	@Autowired
 	private UsuarioServiceImpl serviceUser;
+	
+	@Autowired
+	private JWTService serviceJwt;
 	
 	
 	/**
@@ -29,6 +37,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return new BCryptPasswordEncoder();
 	}
 
+	@Bean
+	public OncePerRequestFilter jwtFilter() {
+		return new JwtAuthFilter(serviceJwt, serviceUser);
+	}
+	
 	/**
 	 * Método responsável pelo algoritmo de autenticação
 	 */
@@ -54,6 +67,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/api/produto/**").hasAnyRole("ADMIN")
 				.antMatchers("/api/pedidos/**").hasAnyRole("USER", "ADMIN")
 				.anyRequest().authenticated()
-				.and().httpBasic();
+				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				.and().addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
 }
