@@ -21,6 +21,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import io.github.matskira.domain.entity.Cliente;
 import io.github.matskira.domain.repository.ClienteRepository;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 // ANOTAÇÕES DE ESTUDO
 /* O @RequestMapping pode receber varios parâmetros para configurar nossa rota de consumo
@@ -40,81 +45,89 @@ import io.github.matskira.domain.repository.ClienteRepository;
 
 @RestController
 @RequestMapping("/api/clientes")
+@Api("API Clientes")
 public class ClienteController {
-	
+
 	private ClienteRepository clienteRep;
-	
+
 	public ClienteController(ClienteRepository clienteRep) {
 		this.clienteRep = clienteRep;
 	}
 
-	/** 
+	/**
 	 * Método responsável por retornar clientes por ID;
+	 * 
 	 * @param Integer id
 	 * @return Objeto Cliente
-	 * */
+	 */
 	@GetMapping(value = "/{id}")
-	public Cliente getClienteById(@PathVariable(name = "id") Integer id ) {
-		
+	@ApiOperation("Obter detalhes de um cliente")
+	@ApiResponses({ @ApiResponse(code = 200, message = "Cliente encontrado"),
+			@ApiResponse(code = 404, message = "Cliente não encotrado para o ID informado") })
+	public Cliente getClienteById(@PathVariable(name = "id") @ApiParam(name = "id do cliente") Integer id) {
+
 		return clienteRep.findById(id).orElseThrow(
-				()-> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não foi encontrado com sucesso"));
-		
+				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não foi encontrado com sucesso"));
+
 	}
-	
-	/** 
+
+	/**
 	 * Método responsável por salvar Clientes
+	 * 
 	 * @param Cliente cliente
 	 * @return dados do cliente salvo na base
-	 * */
+	 */
 	@PostMapping(value = "/cadastro")
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public Cliente saveCliente( @RequestBody @Valid Cliente cliente ){
+	@ApiOperation("Salvar dados de um cliente")
+	@ApiResponses({ @ApiResponse(code = 201, message = "Cliente Cadastrado"),
+			@ApiResponse(code = 400, message = "Erro de validação ao tentar salvar o cliente") })
+	public Cliente saveCliente(@RequestBody @Valid Cliente cliente) {
 		return clienteRep.save(cliente);
 	}
-	
-	/** 
+
+	/**
 	 * Método responsável por excluir clientes na base de dados por ID
+	 * 
 	 * @param Integer id
 	 * @return Retorna 204 sem conteúdo
-	 * */
+	 */
 	@DeleteMapping(value = "/exclui/{id}")
-	@ResponseStatus( code = HttpStatus.NO_CONTENT)
-	public void deleteCliente(@PathVariable Integer id ){
-		clienteRep.findById(id)
-        .map( cliente -> {
-            clienteRep.delete(cliente );
-            return cliente;
-        })
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "Cliente não encontrado") );
+	@ResponseStatus(code = HttpStatus.NO_CONTENT)
+	public void deleteCliente(@PathVariable Integer id) {
+		clienteRep.findById(id).map(cliente -> {
+			clienteRep.delete(cliente);
+			return cliente;
+		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
 	}
-	
-	
-	/** 
-	 * Método responsável por atualizar clientes na base de dados 
+
+	/**
+	 * Método responsável por atualizar clientes na base de dados
+	 * 
 	 * @param Cliente cliente
 	 * @param Integer id
 	 * @return Retorna 204 sem conteúdo
-	 * */	
+	 */
 	@PutMapping(value = "/atualiza/{id}")
-	public void atualizaCliente( @RequestBody @Valid Cliente cliente,  @PathVariable Integer id ){
-		//exemplo de uso do map do Objeto Optional
-		clienteRep.findById(id).map(clienteExistente ->{
+	public void atualizaCliente(@RequestBody @Valid Cliente cliente, @PathVariable Integer id) {
+		// exemplo de uso do map do Objeto Optional
+		clienteRep.findById(id).map(clienteExistente -> {
 			cliente.setId(clienteExistente.getId());
 			clienteRep.save(cliente);
 			return clienteExistente;
-		}).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "Cliente não encontrado"));	
+		}).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
 	}
-	
+
 	/**
-	 * Método responsável por consultar cliente por vários tipos de pesquisa usando o Example
+	 * Método responsável por consultar cliente por vários tipos de pesquisa usando
+	 * o Example
+	 * 
 	 * @param Cliente cliente
 	 * @return Retorna um ou vários dados de cliente
 	 * @see https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example.usage
-	 *  */
+	 */
 	@GetMapping(value = "/consulta_cliente")
-	public List<Cliente> find( Cliente filtro ){
+	public List<Cliente> find(Cliente filtro) {
 		ExampleMatcher matcher = ExampleMatcher.matching().withIgnoreCase().withStringMatcher(StringMatcher.CONTAINING);
 		Example example = Example.of(filtro, matcher);
 		return clienteRep.findAll(example);
